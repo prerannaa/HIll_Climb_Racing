@@ -1,0 +1,9 @@
+body{
+    background-color: black;
+}
+canvas{
+    position: absolute;
+    top: 50%;
+    transform: translate(15%, -50%); 
+    background-color: rgb(135, 206, 235);
+}
