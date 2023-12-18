@@ -9,13 +9,14 @@ class Coin{
         this.height = height;
         this.coinImage = new Image ();
         this.coinImage.src = coinImageSrc;
+        this.vx = 0;
     }
 
     draw(){
         ctx.drawImage(this.coinImage, this.x, this.y, this.width, this.height);
     }
     update(){
-        this.draw();
+        this.x += this.vx;
     }
 }
 

@@ -1,8 +1,12 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-const terrainStride = 100;
+let deltaTime = 0;
 
+let lastCoinGenerationTime = 0;
+let coinGenerationInterval = 5000;
+
+const terrainStride = 100;
 const initialTerrain = new Terrain(0, 250, 0, 0);
 const middleTerrain = new Terrain(501, 200, 0, 0);
 const terrains = [initialTerrain, middleTerrain];
@@ -13,33 +17,31 @@ function createNewTerrain() {
     const newTerrainX = lastTerrain.x + lastTerrain.getTerrainWidth(); // Move the new terrain next to the last one
     const newTerrain = new Terrain(newTerrainX);
     terrains.push(newTerrain);
-    car.terrain = [newTerrain];;
+    car.terrain = [newTerrain];
 }
 
-const car = new Car({ x: 5, y: 30 }, 200, 100, 50, 50, terrains, currentTerrainIndex);
+const car = new Car({ x: 5, y: 30 }, 170, 90, 40, 40, terrains, currentTerrainIndex);
 
 const coinPatterns = [];
 const newCoinPattern = [
-    { x: 200, y: 250, width: 40, height: 40 },
-    { x: 250, y: 250, width: 40, height: 40 },
-    { x: 300, y: 250, width: 40, height: 40 },
-    { x: 350, y: 250, width: 40, height: 40 },
-    { x: 400, y: 250, width: 40, height: 40 },
+    { x: 800, y: 250, width: 40, height: 40 },
+    { x: 850, y: 250, width: 40, height: 40 },
+    { x: 900, y: 250, width: 40, height: 40 },
+    { x: 950, y: 250, width: 40, height: 40 },
+    { x: 1000, y: 250, width: 40, height: 40 },
 
 ];
+
 let lastCoinTime = 0;
 let collectedCoinsScore = 0;
 
+let lastFuelTime = 0;
 const fuel = new Fuel({ x: 10, y: 40 }, FUEL_MAX_WIDTH, 10, FUEL_MAX_WIDTH);
-const fuelIcon = new FuelIcon({ x: 400, y: 250 }, 40, 40, fuel);
+const fuelIcon = new FuelIcon({ x: 500, y: 250 }, 40, 40, fuel);
 
 let buttons  = [];
 var gameState = new Button('Pause', 'white', 'black')
 let isAnimationRunning = true;
-
-// createNewTerrain();
-// createNewTerrain();
-// createNewTerrain();
 
 let frameRate = 1000 / 60;
 let lastFrame = 0;
@@ -56,12 +58,8 @@ const generateCoins = () => {
         const selectedCoins = shuffledCoins.slice(0, numCoinsToGenerate);
 
         selectedCoins.forEach((coin) => {
-             let coinObj = new Coin(
-                coin.x,
-                coin.y, 
-                coin.width, 
-                coin.height,
-            )
+            let coinObj = new Coin(coin.x,coin.y,coin.width,coin.height);
+            coinObj.vx = -SPEED/2;
             coinPatterns.push((coinObj));
         })
         lastCoinTime = currentCoinTime;
@@ -89,15 +87,24 @@ const displayCollectedCoin = () => {
     ctx.fillText("Score: " + collectedCoinsScore, canvas.width - 950, 20); // Adjust position as needed
 };
 
-
-
 const collisionDetectionWithFuel = (car) => {
     if (fuelCollisionDetection(car, fuelIcon)) {
         fuel.currentFuel = FUEL_MAX_WIDTH;
         fuel.draw(); 
         fuelIcon.isVisible = false; 
+
+        setTimeout(() => {
+            // Set a random x position for the fuel icon after collision
+            const fuelIconXMin = 0; // Minimum x position for the fuel icon
+            const fuelIconXMax = canvas.width - fuelIcon.width; // Maximum x position considering fuel icon width
+            const randomFuelIconX = getRandom(fuelIconXMin, fuelIconXMax); // Get a random x position
+
+            fuelIcon.isVisible = true; // Make the fuel icon visible again
+            fuelIcon.x = randomFuelIconX; // Set a random x position for the fuel icon
+        }, FUEL_REGENERATION_DELAY);
     }
 };
+
 
 function drawPauseButton() {
     //button
@@ -115,17 +122,25 @@ function animate() {
     })
 
     // Draw coins from patterns in coinPatterns array
-    generateCoins();
+    const currentTime = performance.now(); // Get the current time
+    // Delay the generation of coins by 5 seconds
+    if (currentTime - lastCoinGenerationTime >= coinGenerationInterval) {
+        generateCoins(); // Call the method to generate coins
+        lastCoinGenerationTime = currentTime; // Update the last generation time
+    }
+
     collisionDetectionWithCoin(car);
     coinPatterns.forEach(coin => {
         coin.update (); 
+        coin.draw();
     });
     displayCollectedCoin(); 
 
     //Methods for fuel class
+    collisionDetectionWithFuel(car);
     fuel.draw();
     fuelIcon.draw();
-    collisionDetectionWithFuel(car);
+
     //Game state management methodss
     drawPauseButton();
     buttons.forEach(button => button.draw());
@@ -137,7 +152,6 @@ function animate() {
     } else {
         car.vx = 0;
     }
-
 
     // Implementation of translate the terrains
     if (car.position.x >= canvas.width/2 && keys.D) {
@@ -157,8 +171,6 @@ function animate() {
 
 
     terrains.forEach((terrain) => terrain.draw());
-    let deltaTime = 0;
-
     if (startTime === undefined) {
         startTime = time;
     }
@@ -168,12 +180,11 @@ function animate() {
     }
     lastFrame = currentFrame;
 
-
     if (fuel.currentFuel <= 0) {
         // Clear the canvas
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
         // Display game over message
         ctx.fillStyle = "black"; // Set text color
         ctx.font = "30px Arial";
@@ -199,9 +210,7 @@ function animate() {
         ctx.fillStyle = "black";
         ctx.font = "20px Arial";
         ctx.fillText("High Score: " + localStorage.getItem('highScore'), canvas.width - 500, canvas.height / 3);
-    
-        // Stop the animation loop
-    }
+        }
     
     if(isAnimationRunning){
         requestAnimationFrame(animate);
