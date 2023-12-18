@@ -3,8 +3,8 @@ const ctx = canvas.getContext('2d');
 
 const terrainStride = 100;
 
-const initialTerrain = new Terrain(0, 250, 500, 300);
-const middleTerrain = new Terrain(501, 200, 1000, 300);
+const initialTerrain = new Terrain(0, 250, 0, 0);
+const middleTerrain = new Terrain(501, 200, 0, 0);
 const terrains = [initialTerrain, middleTerrain];
 let currentTerrainIndex = 0;
 
@@ -37,9 +37,9 @@ let buttons  = [];
 var gameState = new Button('Pause', 'white', 'black')
 let isAnimationRunning = true;
 
-createNewTerrain();
-createNewTerrain();
-createNewTerrain();
+// createNewTerrain();
+// createNewTerrain();
+// createNewTerrain();
 
 let frameRate = 1000 / 60;
 let lastFrame = 0;
@@ -68,6 +68,10 @@ const generateCoins = () => {
     }
 }
 
+const resetCoinCollected =() =>{
+    collectedCoinsScore = 0;
+}
+
 const collisionDetectionWithCoin = (car) => {
     for (let i = coinPatterns.length - 1; i >= 0; i--) { 
         let coin = coinPatterns[i];
@@ -84,6 +88,8 @@ const displayCollectedCoin = () => {
     ctx.font = "20px Arial";
     ctx.fillText("Score: " + collectedCoinsScore, canvas.width - 950, 20); // Adjust position as needed
 };
+
+
 
 const collisionDetectionWithFuel = (car) => {
     if (fuelCollisionDetection(car, fuelIcon)) {
@@ -107,7 +113,6 @@ function animate() {
     terrains.forEach((terrain) => {
         terrain.update();
     })
-
 
     // Draw coins from patterns in coinPatterns array
     generateCoins();
@@ -135,8 +140,8 @@ function animate() {
 
 
     // Implementation of translate the terrains
-    if (car.position.x >= canvas.width / 4 && keys.D) {
-        const translationDistance = car.position.x - canvas.width / 4;
+    if (car.position.x >= canvas.width/2 && keys.D) {
+        const translationDistance = car.position.x - canvas.width / 2;
 
         terrains.forEach((terrain) => {
             terrain.x -= translationDistance; // Move terrains
@@ -172,10 +177,30 @@ function animate() {
         // Display game over message
         ctx.fillStyle = "black"; // Set text color
         ctx.font = "30px Arial";
-        ctx.fillText("Game Over, Press 'Space' to restart", canvas.width / 2 - 100, canvas.height / 2);
+        ctx.fillText("Game Over, Press 'Space' to restart", canvas.width-500, canvas.height / 2);
+        isAnimationRunning = false;
+         
+        let highScore = localStorage.getItem('highScore');
+        if(!highScore){
+            highScore = 0;
+        }
+
+        let totalDistance = 0;
+        terrains.forEach(terrain => {
+            totalDistance -= terrain.getDistanceCovered();
+        });
+
+        if (totalDistance > highScore) {
+            highScore = totalDistance; // Update the high score
+            localStorage.setItem('highScore', highScore); // Store the new high score in localStorage
+        }
+    
+        // Display high score
+        ctx.fillStyle = "black";
+        ctx.font = "20px Arial";
+        ctx.fillText("High Score: " + localStorage.getItem('highScore'), canvas.width - 500, canvas.height / 3);
     
         // Stop the animation loop
-        isAnimationRunning = false;
     }
     
     if(isAnimationRunning){

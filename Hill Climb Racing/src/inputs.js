@@ -16,7 +16,11 @@ window.onkeydown = e => {
             keys.SPACE = true;
             if (!isAnimationRunning) {
                 isAnimationRunning = true;
-                collectedCoinsScore = 0;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                resetCoinCollected();
+                terrains.forEach(terrain => {
+                    terrain.resetDistanceCovered();
+                });                
                 fuel.currentFuel = FUEL_MAX_WIDTH;
                 requestAnimationFrame(animate);
             }

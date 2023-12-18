@@ -6,9 +6,9 @@ class Terrain {
         this.terrainHeight = canvas.height-50;
         this.distanceCovered = 0;
         this.lastXPosition = this.x;
-        this.sineAmplitude = 30; // Amplitude of the sine wave
+        this.sineAmplitude = 60; // Amplitude of the sine wave
         this.sineFrequency = 0.01; // Frequency of the sine wave
-        this.segmentWidth = 30; // Width of each line segment
+        this.segmentWidth = 3; // Width of each line segment
         this.lineSegments = this.generateLineSegments();
         this.terrainWidth = width;
     }
@@ -53,7 +53,16 @@ class Terrain {
     drawDistance() {
         ctx.fillStyle = "white";
         ctx.font = "16px Arial";
-        ctx.fillText("Distance: " + Math.round(this.distanceCovered), canvas.width - 140, 25);
+        ctx.fillText("Distance: " + Math.round(this.distanceCovered), canvas.width - 150, 25);
+    }
+
+    getDistanceCovered(){
+        return this.distanceCovered;
+    }
+
+    resetDistanceCovered() {
+        this.distanceCovered = 0;
+        this.lastXPosition = this.x;
     }
 
 }
