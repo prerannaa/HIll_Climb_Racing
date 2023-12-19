@@ -1,22 +1,22 @@
 const carImageSrc = 'assets/Car.png';
 const wheelImageSrc = 'assets/Tire.png';
 
-function createImage(path){
+function createImage(path) {
     let image = new Image();
     image.src = path;
     return image;
-  }
-  
-  let images = {
-    wheels:[
-      createImage(wheelImageSrc),
-      createImage(wheelImageSrc)
-    ],
-    car:createImage(carImageSrc)
-  }
+}
 
-  let prevLeftY  = 10;
-  let prevRightY = 10;
+let images = {
+    wheels: [
+        createImage(wheelImageSrc),
+        createImage(wheelImageSrc)
+    ],
+    car: createImage(carImageSrc)
+}
+
+let prevLeftY = 10;
+let prevRightY = 10;
 
 class Car {
     constructor(position, carWidth, carHeight, wheelWidth, wheelHeight, terrains, currentTerrainIndex) {
@@ -49,15 +49,19 @@ class Car {
 
     draw(/*angle*/) {
 
-        ctx.save(); 
+        ctx.save();
         this.drawLWheel(this.leftWheelCenter.x, this.leftWheelCenter.y);
         this.drawRWheel(this.rightWheelCenter.x, this.rightWheelCenter.y);
+        // ctx.rotate(this.angle);
         ctx.drawImage(this.carImage, this.position.x, this.position.y, this.carWidth, this.carHeight);
         ctx.restore();
         this.angle = (180 / Math.PI) * Math.atan((this.rightWheelCenter.y - this.leftWheelCenter.y) / car.carWidth);
         if (this.rightWheelCenter.y < this.leftWheelCenter.y) {
             this.angle = -this.angle;
         }
+        // if ((this.angle > 0) && (this.vx > 4)) {
+        //     this.rightWheelCenter.position.y = this.rightWheelCenter.position.y + 4;
+        // }
     }
 
     drawLWheel(x, y) {
@@ -70,11 +74,11 @@ class Car {
 
     drawRWheel(x, y) {
         ctx.save();
-        ctx.translate(x, y + this.wheelHeight/3);
+        ctx.translate(x, y + this.wheelHeight / 3);
         ctx.rotate(this.rotation);
-        ctx.drawImage(this.RWheelImage, -this.wheelWidth/2, -this.wheelHeight / 2, this.wheelWidth, this.wheelHeight);
+        ctx.drawImage(this.RWheelImage, -this.wheelWidth / 2, -this.wheelHeight / 2, this.wheelWidth, this.wheelHeight);
         ctx.restore();
-    }    
+    }
 
 
     checkCollision(lineSegments, wheelCenter) {
@@ -112,14 +116,12 @@ class Car {
     update() {
         car.position.x = this.leftWheelCenter.x - 15;
         car.position.y = this.leftWheelCenter.y - 70;
-        if(isNaN(this.leftWheelCenter.y)) 
-        {
+        if (isNaN(this.leftWheelCenter.y)) {
             this.leftWheelCenter.y = this.leftTerrain.calculateTerrainHeightAtX(prevLeftY);
         }
-        if(isNaN(this.rightWheelCenter.y)) 
-        {
+        if (isNaN(this.rightWheelCenter.y)) {
             this.rightWheelCenter.y = prevRightY;
-          
+
         }
 
         if (this.leftWheelCenter.x < this.leftTerrain.x) {
@@ -155,38 +157,42 @@ class Car {
         if (this.leftWheelCenter.x < 0) {
             this.leftWheelCenter.x = 1;
         }
-        if ((this.rightWheelCenter.x - this.carWidth) < 0) {
-            this.rightWheelCenter.x = 1+ this.carWidth;
+        // let rightXwithAngle = Math.abs(Math.cos(this.angle)* this.carWidth) ;
+        // this.rightWheelCenter.x = rightXwithAngle + this.leftWheelCenter.x;
+
+        // let rightYwithAngle = Math.abs(Math.sin(this.angle)* this.carHeight) ;
+        // this.rightWheelCenter.y = rightYwithAngle + this.leftWheelCenter.y;
+
+        if ((this.rightWheelCenter.x - Math.cos(this.angle)*this.carWidth) < 0) {
+            this.rightWheelCenter.x = Math.cos(this.angle)*this.carWidth;
         }
+        // if(this.rightWheelCenter.y + this.wheelWidth)
+
+
         this.leftWheelCenter.x += this.vx;
         this.rightWheelCenter.x += this.vx;
 
-        if (!(this.leftWheelCenter.y + this.wheelWidth < this.leftTerrain.calculateTerrainHeightAtX(this.leftWheelCenter.x))) 
-        {
-            if(isNaN(this.leftTerrain.calculateTerrainHeightAtX(this.leftWheelCenter.x))) 
-            {
+        if (!(this.leftWheelCenter.y + this.wheelWidth < this.leftTerrain.calculateTerrainHeightAtX(this.leftWheelCenter.x))) {
+            if (isNaN(this.leftTerrain.calculateTerrainHeightAtX(this.leftWheelCenter.x))) {
                 this.leftWheelCenter.y = prevLeftY;
             }
             else {
-            this.leftWheelCenter.y = this.leftTerrain.calculateTerrainHeightAtX(this.leftWheelCenter.x) - car.wheelWidth;
+                this.leftWheelCenter.y = this.leftTerrain.calculateTerrainHeightAtX(this.leftWheelCenter.x) - car.wheelWidth;
             }
-        } 
-        else 
-        {
+        }
+        else {
             this.leftWheelCenter.y += GRAVITY;
         }
-        if (!(this.rightWheelCenter.y + this.wheelWidth <  this.rightTerrain.calculateTerrainHeightAtX(this.rightWheelCenter.x))) {
+        if (!(this.rightWheelCenter.y + this.wheelWidth < this.rightTerrain.calculateTerrainHeightAtX(this.rightWheelCenter.x))) {
             if (isNaN(this.rightTerrain.calculateTerrainHeightAtX(this.rightWheelCenter.x))) {
-                this.rightWheelCenter.y = prevRightY;    
-            } 
-            else 
-            {
-            this.rightWheelCenter.y = this.rightTerrain.calculateTerrainHeightAtX(this.rightWheelCenter.x) - car.wheelWidth;
+                this.rightWheelCenter.y = prevRightY;
+            }
+            else {
+                this.rightWheelCenter.y = this.rightTerrain.calculateTerrainHeightAtX(this.rightWheelCenter.x) - car.wheelWidth;
             }
         }
-         else 
-        {
-        this.rightWheelCenter.y += GRAVITY;
+        else {
+            this.rightWheelCenter.y += GRAVITY;
         }
         prevLeftY = this.leftWheelCenter.y;
         prevRightY = this.rightWheelCenter.y;

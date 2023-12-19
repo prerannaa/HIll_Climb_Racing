@@ -37,7 +37,8 @@ let collectedCoinsScore = 0;
 
 let lastFuelTime = 0;
 const fuel = new Fuel({ x: 10, y: 40 }, FUEL_MAX_WIDTH, 10, FUEL_MAX_WIDTH);
-const fuelIcon = new FuelIcon({ x: 500, y: 250 }, 40, 40, fuel);
+let xforFuel = getRandom(0,canvas.width/2-45); 
+let fuelIcon = new FuelIcon({ x: xforFuel, y: 250 }, 40, 40, fuel);
 
 let buttons  = [];
 var gameState = new Button('Pause', 'white', 'black')
@@ -97,14 +98,13 @@ const collisionDetectionWithFuel = (car) => {
             // Set a random x position for the fuel icon after collision
             const fuelIconXMin = 0; // Minimum x position for the fuel icon
             const fuelIconXMax = canvas.width - fuelIcon.width; // Maximum x position considering fuel icon width
-            const randomFuelIconX = getRandom(fuelIconXMin, fuelIconXMax); // Get a random x position
+            const randomFuelIconX = getRandom(0,canvas.width/2-45); // Get a random x position
 
             fuelIcon.isVisible = true; // Make the fuel icon visible again
             fuelIcon.x = randomFuelIconX; // Set a random x position for the fuel icon
         }, FUEL_REGENERATION_DELAY);
     }
 };
-
 
 function drawPauseButton() {
     //button
